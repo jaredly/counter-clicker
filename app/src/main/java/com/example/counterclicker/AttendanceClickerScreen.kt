@@ -1,7 +1,10 @@
 package com.example.counterclicker
 
+import android.content.Context
 import android.os.Build
-import android.view.HapticFeedbackConstants
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,7 +36,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -50,6 +53,7 @@ private val AppBackground = Color(0xFF0F0F10)
 private val PrimaryText = Color(0xFFF5F5F5)
 private val SecondaryButton = Color(0xFF242427)
 private val DangerText = Color(0xFFFF6B6B)
+private const val INCREMENT_VIBRATION_DURATION_MS = 25L
 
 @Composable
 fun AttendanceClickerScreen(
@@ -61,7 +65,7 @@ fun AttendanceClickerScreen(
 ) {
     var editVisible by rememberSaveable { mutableStateOf(false) }
     var editText by rememberSaveable { mutableStateOf("") }
-    val performIncrementHaptic = rememberIncrementHaptic()
+    val performIncrementVibration = rememberIncrementVibration()
 
     Column(
         modifier = modifier
@@ -89,7 +93,7 @@ fun AttendanceClickerScreen(
 
         Button(
             onClick = {
-                performIncrementHaptic()
+                performIncrementVibration()
                 onIncrement()
             },
             modifier = Modifier
@@ -227,14 +231,29 @@ fun EditCountDialog(
 }
 
 @Composable
-fun rememberIncrementHaptic(): () -> Unit {
-    val view = LocalView.current
-    return remember(view) {
+fun rememberIncrementVibration(): () -> Unit {
+    val context = LocalContext.current
+    return remember(context) {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager =
+                context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
         {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(
+                    VibrationEffect.createOneShot(
+                        INCREMENT_VIBRATION_DURATION_MS,
+                        VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                )
             } else {
-                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(INCREMENT_VIBRATION_DURATION_MS)
             }
         }
     }
