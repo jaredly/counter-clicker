@@ -1,0 +1,14 @@
+{
+  "name": "counter-clicker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:debug": "gradle :app:assembleDebug",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release:github": "bash scripts/release-github.sh"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.5"
+  }
+}
