@@ -1,40 +1,46 @@
 package com.example.counterclicker
 
-import android.app.Activity
 import android.os.Bundle
-import android.view.Gravity
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 
-class MainActivity : Activity() {
-    private var count = 0
+class MainActivity : ComponentActivity() {
+
+    private val viewModel: ClickerViewModel by viewModels {
+        ClickerViewModelFactory(
+            CounterRepository(applicationContext.clickerDataStore)
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val label = TextView(this).apply {
-            text = getString(R.string.counter_label, count)
-            textSize = 32f
-            gravity = Gravity.CENTER
-        }
+        setContent {
+            val count by viewModel.count.collectAsState()
 
-        val button = Button(this).apply {
-            text = getString(R.string.increment_button)
-            setOnClickListener {
-                count += 1
-                label.text = getString(R.string.counter_label, count)
+            MaterialTheme(
+                colorScheme = darkColorScheme(
+                    background = Color(0xFF0F0F10),
+                    surface = Color(0xFF1B1B1F),
+                    primary = Color(0xFFF5F5F5),
+                    onPrimary = Color(0xFF0F0F10),
+                    onBackground = Color(0xFFF5F5F5),
+                    onSurface = Color(0xFFF5F5F5)
+                )
+            ) {
+                AttendanceClickerScreen(
+                    count = count,
+                    onIncrement = viewModel::increment,
+                    onDecrement = viewModel::decrement,
+                    onSetCount = viewModel::setCount
+                )
             }
         }
-
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(48, 48, 48, 48)
-            addView(label)
-            addView(button)
-        }
-
-        setContentView(layout)
     }
 }
