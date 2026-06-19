@@ -1,5 +1,3 @@
 <resources>
-    <string name="app_name">Counter Clicker</string>
-    <string name="counter_label">Count: %1$d</string>
-    <string name="increment_button">Click me</string>
+    <string name="app_name">Attendance Clicker</string>
 </resources>
